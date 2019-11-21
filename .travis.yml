@@ -1,0 +1,8 @@
+language: swift
+xcode_project: Numero.xcodeproj # path to your xcodeproj folder
+xcode_scheme: NumeroTests
+osx_image: xcode11.2
+os: osx
+xcode_destination: platform=iOS Simulator, OS=12.2
+script:
+- fastlane scan
