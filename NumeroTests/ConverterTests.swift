@@ -33,12 +33,15 @@ import XCTest
 class ConverterTests: XCTestCase {
   
     let converter = Converter()
-  
+    var session: URLSession!
+    
     override func setUp() {
         super.setUp()
+        session = URLSession(configuration: .default)
     }
   
     override func tearDown() {
+        session = nil
         super.tearDown()
     }
       
@@ -91,4 +94,32 @@ class ConverterTests: XCTestCase {
         let result = converter.convert(3999)
         XCTAssertEqual(result, "MMMCMXCIX", "Conversion for 3999 is incorrect")
       }
+    
+    // Asynchronous test: success fast, failure slow
+    func testValidCallToiTunesGetsHTTPStatusCode200() {
+      // given
+      let url =
+        URL(string: "https://itunes.apple.com/search?media=music&entity=song&term=abba")
+      // 1
+      let promise = expectation(description: "Status code: 200")
+        
+        // when
+        let dataTask = session.dataTask(with: url!) { data, response, error in
+            // then
+            if let error = error {
+              XCTFail("Error: \(error.localizedDescription)")
+              return
+            } else if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+              if statusCode == 200 {
+                // 2
+                promise.fulfill()
+              } else {
+                XCTFail("Status code: \(statusCode)")
+              }
+            }
+          }
+          dataTask.resume()
+          // 3
+          wait(for: [promise], timeout: 5)
+    }
 }
